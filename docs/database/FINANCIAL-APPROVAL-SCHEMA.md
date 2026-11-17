@@ -8,6 +8,8 @@
 
 > This document translates the confirmed V1 financial approval policy into a relational schema and transaction design. It is a design proposal, not an applied migration. The parent financial entities (`payments`, `refunds`, `folios`, and `folio_entries`) still need their own reviewed ledger and accounting design. Do not implement this document as standalone SQL until those parent contracts are finalized.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). This document defines the detailed design for its domain; the baseline controls release scope and the remaining external validation gates. Design text is not implemented behavior.
+
 ## 1. Confirmed policy this schema must enforce
 
 - Each property has its own financial thresholds.
