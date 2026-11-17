@@ -8,6 +8,8 @@
 
 > This document defines a proposed ledger boundary and entity contract. It is not an approved executable schema, legal accounting opinion, or applied migration. Provider selection, tax/invoice rules, cashier operations, and several folio workflows remain open. Do not create SQL migrations until the open decisions and parent-table contracts are reviewed.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). This document defines the detailed design for its domain; the baseline controls release scope and the remaining external validation gates. Design text is not implemented behavior.
+
 ## 1. Goals and non-negotiable invariants
 
 The V1 financial domain must support:
