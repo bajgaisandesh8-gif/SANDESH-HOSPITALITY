@@ -14,12 +14,14 @@
 - [Database Design](database/DATABASE-DESIGN.md) — conceptual entities, integrity, RLS, indexing, and migration principles.
 - [Entity Relationship Diagram](database/ERD.md) — conceptual domain relationships; not a final schema.
 - [API Design](api/API-DESIGN.md) — candidate endpoints, request/response principles, authorization, and error handling.
+- [Architecture Decision Records](architecture/ARCHITECTURE-DECISIONS.md) — rationale and status of foundational architecture choices.
 
 ## Security and quality
 
 - [Security Architecture](security/SECURITY-ARCHITECTURE.md) — trust boundaries, access control, secrets, guest data, audit, and incident response.
 - [Permission Matrix](security/PERMISSION-MATRIX.md) — proposed roles and module permissions; not yet approved.
 - [Testing and Release Strategy](quality/TESTING-AND-RELEASE-STRATEGY.md) — test layers, critical invariants, CI, release gates, and recovery expectations.
+- [Agent Instructions](../AGENTS.md) — repository-wide rules for AI agents and contributors.
 
 ## Workflows and automation
 
@@ -30,6 +32,8 @@
 ## Planning and decisions
 
 - [Open Decisions](planning/OPEN-DECISIONS.md) — unresolved product, market, legal, operations, and architecture decisions.
+- [Implementation Roadmap](planning/IMPLEMENTATION-ROADMAP.md) — phased delivery sequence and entry/exit criteria.
+- [Contributing](../CONTRIBUTING.md) — branch, pull-request, and engineering workflow.
 
 ## Readiness before feature coding
 
