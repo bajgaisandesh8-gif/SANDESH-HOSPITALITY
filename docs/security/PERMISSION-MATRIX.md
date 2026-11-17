@@ -1,7 +1,7 @@
 # SANDESH HOSPITALITY — Permission Matrix
 
-**Status:** Initial proposal — requires product and security review  
-**Version:** 0.1.0  
+**Status:** V1 access decisions confirmed; detailed mapping is a proposed implementation baseline requiring final product/security review  
+**Version:** 0.2.0  
 **Related documents:** `docs/security/SECURITY-ARCHITECTURE.md`, `docs/database/DATABASE-DESIGN.md`, `docs/api/API-DESIGN.md`
 
 > This matrix is a starting point for authorization design. It does not define final roles, legal responsibilities, or implemented permissions. The product owner must approve role names, scope, and sensitive-action rules before implementation.
@@ -235,4 +235,77 @@ The product owner has selected the following V1 direction:
 
 The concrete proposed tables, composite foreign keys, role-assignment structure, lifecycle rules, and RLS requirements are documented in [FOUNDATION-SCHEMA.md](../database/FOUNDATION-SCHEMA.md).
 
-**Status note:** The membership and role-model decisions above are confirmed for V1. The exact role-to-permission mapping, sensitive-action approvals, and remaining items in section 10 still require review. This document is not evidence that authorization has been implemented or tested.
+**Status note:** The membership and role-model decisions above are confirmed for V1. The V1 permission catalog and proposed fixed role mapping are now documented in sections 14–16. Remaining sensitive-action implementation and other open product decisions still require review. This document is not evidence that authorization has been implemented or tested.
+
+
+## 13. Confirmed V1 Organization Administrator authority
+
+**Decision: Limited administration.** Organization Administrator is not equivalent to Organization Owner.
+
+Allowed:
+- Read/update permitted organization settings and manage properties within the organization.
+- Invite, suspend and revoke ordinary staff memberships.
+- Assign/revoke approved property-scoped operational roles within the same organization.
+- Read operational reports, permitted automation metadata and audit records.
+
+Not allowed:
+- Grant, revoke, suspend, demote or transfer an Organization Owner.
+- Grant or revoke Organization Administrator roles.
+- Change the membership or roles of an Owner or another Administrator.
+- Transfer ownership or billing ownership.
+- Modify the fixed role catalog, permission catalog or role-to-permission mappings.
+- Access sensitive guest data/exports, refunds, financial reconciliation, folio adjustments, financial exports or integration secrets merely by virtue of being an Administrator.
+
+The server must enforce an explicit allowlist of property roles that an Administrator may assign. Organization Owner and Administrator roles are excluded from that allowlist. Only an Owner can manage those organization-level role assignments, with last-owner and owner-transfer safeguards.
+
+## 14. V1 permission catalog
+
+| Domain | Permission codes |
+|---|---|
+| Organization | `organization.read`, `organization.update` |
+| Property | `property.read`, `property.create`, `property.update`, `property.manage` |
+| Membership | `membership.read`, `membership.invite`, `membership.suspend`, `membership.revoke`, `membership.role.assign`, `membership.role.revoke`, `membership.owner.transfer` |
+| Reservations | `reservation.read`, `reservation.create`, `reservation.update`, `reservation.cancel`, `reservation.check_in`, `reservation.check_out` |
+| Guests | `guest.read_limited`, `guest.read_sensitive`, `guest.create`, `guest.update`, `guest.export` |
+| Rooms | `room.read`, `room.update_status`, `room.manage` |
+| Housekeeping | `housekeeping.task.read`, `housekeeping.task.assign`, `housekeeping.task.update` |
+| Restaurant | `restaurant.order.read`, `restaurant.order.create`, `restaurant.order.update`, `restaurant.menu.manage` |
+| Folio | `folio.read`, `folio.post_charge`, `folio.adjust`, `folio.adjust.approve` |
+| Payments | `payment.collect`, `payment.refund`, `payment.refund.approve`, `payment.reconcile` |
+| Cashier sessions | `cashier.session.open`, `cashier.session.close` |
+| Reports | `report.operational.read`, `report.financial.read`, `report.export` |
+| Automation | `automation.read`, `automation.create`, `automation.test`, `automation.publish`, `automation.disable` |
+| Audit | `audit.read` |
+| Integrations | `integration.manage` |
+
+## 15. Fixed V1 role-to-permission mapping
+
+| Fixed V1 role | Scope | Permission grants |
+|---|---|---|
+| `organization_owner` | Organization | All catalog permissions, within organization scope and subject to approval separation-of-duties, last-owner safeguards and business rules. |
+| `organization_admin` | Organization | `organization.read`, `organization.update`, `property.read`, `property.create`, `property.update`, `property.manage`, `membership.read`, `membership.invite`, `membership.suspend`, `membership.revoke`, `membership.role.assign`, `membership.role.revoke`, `report.operational.read`, `automation.read`, `audit.read`. Role-management operations are restricted by section 13. |
+| `general_manager` | Property | `property.read`, `property.update`, `room.read`, `room.update_status`, `room.manage`, all reservation permissions, `guest.read_limited`, `guest.create`, `guest.update`, all housekeeping task permissions, all restaurant permissions, `folio.read`, `folio.post_charge`, `report.operational.read`, `report.financial.read`, `automation.read`, `audit.read`. |
+| `front_desk_manager` | Property | `room.read`, `room.update_status`, all reservation permissions, `guest.read_limited`, `guest.create`, `guest.update`, `folio.read`, `folio.post_charge`, `report.operational.read`, `automation.read`. |
+| `front_desk_agent` | Property | `room.read`, `room.update_status`, `reservation.read`, `reservation.create`, `reservation.update`, `reservation.check_in`, `reservation.check_out`, `guest.read_limited`, `guest.create`, `guest.update`, `folio.read`. |
+| `reservation_agent` | Property | `room.read`, `reservation.read`, `reservation.create`, `reservation.update`, `reservation.cancel`, `guest.read_limited`, `guest.create`, `guest.update`. |
+| `housekeeping_manager` | Property | `room.read`, `room.update_status`, `housekeeping.task.read`, `housekeeping.task.assign`, `housekeeping.task.update`, `report.operational.read`. |
+| `housekeeping_staff` | Property | `room.read`, `housekeeping.task.read`, `housekeeping.task.update`, restricted to assigned tasks and allowed state transitions. |
+| `restaurant_manager` | Property | `restaurant.order.read`, `restaurant.order.create`, `restaurant.order.update`, `restaurant.menu.manage`, `folio.read`, `report.operational.read`. |
+| `restaurant_staff` | Property | `restaurant.order.read`, `restaurant.order.create`, `restaurant.order.update`, restricted to assigned outlet/order state. |
+| `cashier` | Property | `reservation.read`, `guest.read_limited`, `folio.read`, `folio.post_charge`, `payment.collect`, `cashier.session.open`, `cashier.session.close`. |
+| `finance_manager` | Property | `reservation.read`, `guest.read_limited`, `folio.read`, `folio.post_charge`, `folio.adjust`, `payment.collect`, `payment.refund`, `payment.reconcile`, `report.operational.read`, `report.financial.read`, `report.export`, `audit.read`. Does not receive approval permissions by default. |
+| `auditor_read_only` | Property | `reservation.read`, `room.read`, `guest.read_limited`, `housekeeping.task.read`, `restaurant.order.read`, `folio.read`, `report.operational.read`, `report.financial.read`, `audit.read`. |
+| `maintenance_staff` | Property | `room.read`, maintenance-limited `room.update_status`. Maintenance task access is deferred until a dedicated maintenance task model exists. |
+| `automation_manager` | Property | `automation.read`, `automation.create`, `automation.test`, `automation.publish`, `automation.disable`, `report.operational.read`, `audit.read`. |
+
+**Important:** This is a proposed V1 baseline, not a grant to bypass server-side business rules. `payment.refund` and `folio.adjust` require approval by a separate authorized actor; the initiator cannot approve their own operation. The approval permissions are not granted to finance_manager by default. `guest.read_sensitive`, `guest.export`, `payment.refund.approve`, and `folio.adjust.approve` have no ordinary role grants in this baseline pending a separate policy decision. The Owner's broad authority does not remove the requirement for independent approval of their own high-risk operation.
+
+## 16. Catalog consistency and implementation gates
+
+- Seed role, permission and mapping rows only through reviewed migrations.
+- Role assignments must validate role scope against the target assignment table.
+- Organization Administrator role grants must be restricted to an allowlist of property roles; Owner/Admin role grants are owner-only.
+- Organization Admin cannot manage another Owner or Administrator membership.
+- Every API route, server action, background job and automation action must map to a permission and enforce scope.
+- Test every allow and deny, including cross-tenant, cross-property, admin-to-owner escalation, last-owner removal, sensitive-data access and approval separation.
+- No SQL migration has been applied as part of this documentation update.
