@@ -129,6 +129,8 @@ Financial requirements:
 
 The final ledger model and accounting semantics require finance-domain review.
 
+The V1 financial approval schema proposal is maintained in [FINANCIAL-APPROVAL-SCHEMA.md](FINANCIAL-APPROVAL-SCHEMA.md). It defines the proposed property policy, financial operation request, immutable approval decision, audit-log, rolling 24-hour folio adjustment aggregation, refund reservation, and execution/reconciliation boundaries. It depends on finalizing the parent payment/folio ledger model and is not an executable schema.
+
 ### 3.5 Restaurant, KOT, and QR ordering
 
 | Candidate entity | Purpose | Scope |
@@ -367,6 +369,8 @@ Before executable schema work:
 5. Design the reservation/inventory transaction model.
 6. Design the folio/payment ledger model.
 7. Review migration and test strategy.
+8. Review [FINANCIAL-APPROVAL-SCHEMA.md](FINANCIAL-APPROVAL-SCHEMA.md) against the final payment/folio ledger model, currency rules, and approval lifecycle.
+9. Only then create migrations in a local development database.
 8. Only then create migrations in a local development database.
 
 **Status:** Initial conceptual baseline — not approved for production schema implementation.
