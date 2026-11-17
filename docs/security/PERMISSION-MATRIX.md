@@ -201,9 +201,9 @@ Tenant isolation, least privilege, and financial authorization tests are release
 
 ## 10. Decisions requiring approval
 
-1. Final role list and whether tenants can create custom roles.
-2. Whether organization roles automatically apply to all properties.
-3. Whether property-specific membership is mandatory or optional.
+1. ~~Final role list and whether tenants can create custom roles.~~ Resolved for V1: fixed platform-defined role catalog; see section 12.
+2. ~~Whether organization roles automatically apply to all properties.~~ Resolved for V1: organization-scope roles apply only for explicitly mapped permissions within their organization; property roles require explicit property membership.
+3. ~~Whether property-specific membership is mandatory or optional.~~ Resolved for V1: operational property roles require explicit property membership.
 4. Which guest fields are classified as sensitive.
 5. Refund thresholds and approval requirements.
 6. Who may adjust folios, void invoices, close cashier sessions, and reconcile payments.
@@ -283,7 +283,7 @@ The server must enforce an explicit allowlist of property roles that an Administ
 | Fixed V1 role | Scope | Permission grants |
 |---|---|---|
 | `organization_owner` | Organization | All catalog permissions, within organization scope and subject to approval separation-of-duties, last-owner safeguards and business rules. |
-| `organization_admin` | Organization | `organization.read`, `organization.update`, `property.read`, `property.create`, `property.update`, `property.manage`, `membership.read`, `membership.invite`, `membership.suspend`, `membership.revoke`, `membership.role.assign`, `membership.role.revoke`, `report.operational.read`, `automation.read`, `audit.read`. Role-management operations are restricted by section 13. |
+| `organization_admin` | Organization | `organization.read`, `organization.update`, `property.read`, `property.create`, `property.update`, `membership.read`, `membership.invite`, `membership.suspend`, `membership.revoke`, `membership.role.assign`, `membership.role.revoke`, `report.operational.read`, `automation.read`, `audit.read`. Role-management operations are restricted by section 13. |
 | `general_manager` | Property | `property.read`, `property.update`, `room.read`, `room.update_status`, `room.manage`, all reservation permissions, `guest.read_limited`, `guest.create`, `guest.update`, all housekeeping task permissions, all restaurant permissions, `folio.read`, `folio.post_charge`, `report.operational.read`, `report.financial.read`, `automation.read`, `audit.read`. |
 | `front_desk_manager` | Property | `room.read`, `room.update_status`, all reservation permissions, `guest.read_limited`, `guest.create`, `guest.update`, `folio.read`, `folio.post_charge`, `report.operational.read`, `automation.read`. |
 | `front_desk_agent` | Property | `room.read`, `room.update_status`, `reservation.read`, `reservation.create`, `reservation.update`, `reservation.check_in`, `reservation.check_out`, `guest.read_limited`, `guest.create`, `guest.update`, `folio.read`. |
