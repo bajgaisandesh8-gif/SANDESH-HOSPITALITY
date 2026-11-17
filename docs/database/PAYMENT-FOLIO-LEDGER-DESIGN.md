@@ -13,7 +13,7 @@
 The V1 financial domain must support:
 - Guest/reservation/stay folios and property-scoped financial activity.
 - Charges from accommodation, restaurant orders, approved services, taxes, fees, and manual adjustments.
-- Cash and electronic payment records, partial payments, split tender, deposits, and payment-to-folio allocations.
+- Cash and electronic payment records, partial payments, deposits, and payment-to-folio allocations. Split-tender support remains pending product approval.
 - Refund requests and execution with the separately documented Owner approval policy.
 - Immutable posted financial history and explicit compensating entries.
 - Reliable provider callbacks, idempotency, reconciliation, and auditability.
