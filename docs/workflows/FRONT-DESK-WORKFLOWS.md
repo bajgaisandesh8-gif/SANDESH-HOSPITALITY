@@ -6,6 +6,8 @@
 
 > This document describes intended behavior. It is not implemented software, a final legal policy, or a substitute for property-specific operating procedures.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Use its release boundary and defaults where this earlier proposal is broader or still marks a decision open. External validation gates remain mandatory; this file is a design proposal, not proof of implementation.
+
 ## 1. Goals and operating principles
 
 The front desk is the operational control point for arrivals, in-house guests, departures, room assignment, guest requests, and shift handover.
