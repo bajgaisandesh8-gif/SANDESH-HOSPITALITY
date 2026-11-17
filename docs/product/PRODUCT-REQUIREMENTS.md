@@ -3,12 +3,14 @@
 
 **Product name:** SANDESH HOSPITALITY  
 **Product type:** Multi-tenant Hotel Management & Automation SaaS  
-**Document status:** Initial baseline — for review  
+**Document status:** V1 product baseline — subordinate details consolidated in the planning baseline  
 **Version:** 0.1.0  
 **Platform strategy:** Web-first, cloud-first  
 **Owner:** Product owner approval required
 
 > This document records the current product direction. Items marked as open decisions are not approved requirements and must not be silently assumed during implementation.
+
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Where this older design text still lists a topic as open or proposed but the consolidated baseline provides a V1 default, use the baseline for planning; external validation gates remain mandatory. This document remains a design artifact, not proof of implementation or production approval.
 
 ---
 
