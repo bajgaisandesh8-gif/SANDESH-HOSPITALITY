@@ -1,12 +1,14 @@
 # SANDESH HOSPITALITY
 ## Database Design
 
-**Document status:** Conceptual baseline — V1 membership and role decisions are resolved in docs/database/FOUNDATION-SCHEMA.md  
+**Document status:** Conceptual database baseline — implementation defaults and scope are governed by docs/planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md  
 **Version:** 0.1.0  
 **Database direction:** Supabase PostgreSQL  
 **Related documents:** docs/product/PRODUCT-REQUIREMENTS.md and docs/architecture/SYSTEM-ARCHITECTURE.md
 
 > This document proposes logical entities, relationships, integrity requirements, and security constraints. It is not an approved executable schema or migration. Entity names and boundaries are candidates until reviewed against detailed workflows, reporting, fiscal requirements, and the final permission model.
+
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Where this older design text still lists a topic as open or proposed but the consolidated baseline provides a V1 default, use the baseline for planning; external validation gates remain mandatory. This document remains a design artifact, not proof of implementation or production approval.
 
 ## 1. Database design objectives
 
