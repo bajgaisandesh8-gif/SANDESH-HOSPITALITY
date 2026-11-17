@@ -215,7 +215,7 @@ The current request is included exactly once in the calculation. The operation-r
 - Serialize all adjustment requests for the same folio by locking the authoritative folio row (or a dedicated per-folio lock row) inside a database transaction.
 - Under that lock, re-read policy/request/ledger state, calculate the cumulative amount, reserve the current amount, and persist the operation request before releasing the lock.
 - The same controlled transaction must be used by every adjustment path, including API routes, server actions, and automation.
-- At execution, lock the folio again and revalidate the request binding, reservation, approval, period state, and ledger balance. If the current total now requires approval and the request has none, do not execute; move it to a blocked/pending-approval path requiring an Owner decision.
+- At execution, lock the folio again and revalidate the request binding, reservation, approval, period state, and ledger balance. If the current total now requires approval and the request was initially marked `not_required`, atomically change its approval state to `pending`, keep execution blocked, and require an independent Owner decision before queuing execution.
 - Use a consistent lock order across all financial functions to reduce deadlocks. Final lock order must be documented alongside the parent ledger design.
 
 ### 4.1 Corrections linked to the same original folio entry
@@ -247,7 +247,7 @@ Approval and execution are separate state dimensions.
 
 | State | Meaning | Allowed next states |
 |---|---|---|
-| `not_required` | No approval required under threshold/exception rules | Terminal for approval dimension |
+| `not_required` | No approval required under the initial threshold/exception calculation | `pending` only if execution-time revalidation finds that a newly reserved/cumulative amount or changed business state now requires approval; otherwise remains not required |
 | `pending` | Waiting for an eligible independent Owner | `approved`, `rejected`, `cancelled`, `expired` |
 | `approved` | Valid Owner decision recorded for exact request binding | Terminal; material change requires new request |
 | `rejected` | Owner rejected the request | Terminal |
