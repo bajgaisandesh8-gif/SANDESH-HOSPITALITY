@@ -7,6 +7,8 @@
 
 > This document describes a proposed reservation lifecycle. It is not an implemented workflow or final operational policy. Hotel-specific rules such as check-in times, deposits, cancellation penalties, no-show handling, and invoice rules must be configured and approved before implementation.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Use its release boundary and defaults where this earlier proposal is broader or still marks a decision open. External validation gates remain mandatory; this file is a design proposal, not proof of implementation.
+
 ## 1. Purpose and terminology
 
 Define the business lifecycle from an availability search through reservation creation, confirmation, arrival, check-in, in-house stay, room changes/extensions, check-out, and post-stay closure.
