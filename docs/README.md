@@ -31,11 +31,16 @@
 
 ## Planning and decisions
 
+- [V1 Product and Architecture Baseline](planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md) — consolidated V1 scope, conservative defaults, implementation order, and external validation gates. This is the primary planning reference; external legal/provider gates remain open.
+
 - [Open Decisions](planning/OPEN-DECISIONS.md) — unresolved product, market, legal, operations, and architecture decisions.
 - [Implementation Roadmap](planning/IMPLEMENTATION-ROADMAP.md) — phased delivery sequence and entry/exit criteria.
 - [Contributing](../CONTRIBUTING.md) — branch, pull-request, and engineering workflow.
 
 ## Readiness before feature coding
+
+The consolidated V1 baseline supersedes older generic suggestions where they conflict. The first coding slice is limited to identity and organization/property context. Reservation/finance implementation remains gated by the specific approvals and evidence listed in the baseline.
+
 
 The following are still required:
 1. Review and approve V1 scope and the first release boundary.
