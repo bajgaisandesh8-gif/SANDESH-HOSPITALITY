@@ -13,7 +13,7 @@
 The V1 financial domain must support:
 - Guest/reservation/stay folios and property-scoped financial activity.
 - Charges from accommodation, restaurant orders, approved services, taxes, fees, and manual adjustments.
-- Cash and electronic payment records, partial payments, deposits, and payment-to-folio allocations. Split-tender support remains pending product approval.
+- Cash and electronic payment records, partial payments, deposits, and payment-to-folio allocations. V1 supports split tender: multiple separately recorded payment methods may settle one reservation folio.
 - Refund requests and execution with the separately documented Owner approval policy.
 - Immutable posted financial history and explicit compensating entries.
 - Reliable provider callbacks, idempotency, reconciliation, and auditability.
@@ -41,11 +41,11 @@ A folio is a property-scoped account statement for a guest, reservation, stay, c
 
 ### 2.2 Payment
 
-A payment represents a tender or collection attempt and its confirmed financial outcome: cash received, bank transfer verified, or an electronic provider transaction. A payment can be partially allocated, fully allocated, or temporarily unapplied. A payment may have one or more allocations, subject to final deposit and split-tender rules.
+A payment represents a tender or collection attempt and its confirmed financial outcome: cash received, bank transfer verified, or an electronic provider transaction. A payment can be partially allocated, fully allocated, or temporarily unapplied. A payment is one tender/collection record using one payment method and may be partially or fully allocated to exactly one folio in V1. Multiple separate payment records using different methods may allocate to the same folio (split tender).
 
 ### 2.3 Allocation
 
-An allocation applies some amount of a settled payment to a specific folio. It is a separate relationship because one payment may be split across folios and one folio may be paid by multiple payments. Allocation history is immutable; corrections use allocation reversals/compensating rows.
+An allocation applies a settled payment/tender to one specific folio. In V1, one payment must not be split across multiple folios; multiple separate payments (each representing one tender/method) may be allocated to the same folio. Allocation history is immutable; corrections use allocation reversals/compensating rows.
 
 ### 2.4 Refund
 
@@ -141,7 +141,7 @@ Rules:
 - For bank transfer, a screenshot or client assertion alone is not sufficient settlement evidence; define an authorized verification process.
 - For electronic payments, verify provider signatures and query/reconcile provider state where required.
 - Payment status is not a substitute for immutable payment events or audit evidence.
-- A payment may be unapplied or partially allocated if deposit/advance-payment workflows are approved.
+- A payment may be unapplied or partially allocated only under the approved advance-deposit workflow. For split tender, record each tender as its own payment row with its own method, amount, settlement evidence, and idempotency key.
 
 ### 4.4 `payment_events` — append-only lifecycle evidence
 
@@ -168,12 +168,17 @@ Candidate fields:
 
 Rules:
 - Payment and folio must share organization, property, and currency for V1.
+- Each payment represents exactly one tender/payment method and may be allocated to only one folio in V1. Multiple distinct payment rows may target the same folio; this is the approved split-tender model.
+- A folio's paid amount is the sum of its valid posted allocations across all settled tender records, not a single combined payment row.
+- Each tender is independently verified, posted, idempotent, and auditable. A failed or pending tender must not create a folio credit.
+- Do not create a synthetic combined payment record for a split-tender settlement; preserve the actual tender records.
 - Sum of active allocations must never exceed the verified settled amount less refunds and prior allocation reversals, under a payment-row lock.
 - Allocation cannot make a folio credit exceed the applicable policy/available amount unless an approved deposit/credit-balance workflow explicitly allows it.
 - Allocation posting and corresponding folio credit entry occur atomically.
 - Allocation reversal creates a compensating debit entry on the folio and a linked reversal record; it does not erase the original allocation.
 - A retry with the same idempotency key returns the existing allocation result.
-- Under the V1 one-primary-folio model, an allocation targets one reservation folio. A single payment is not split across multiple folios in V1. Whether a single folio can be settled using multiple tenders (split tender) remains an explicit open decision; do not infer it from the one-folio choice.
+- Under the V1 one-primary-folio model, an allocation targets one reservation folio. A single payment is not split across multiple folios in V1. Multiple separately recorded tenders may each allocate to the same reservation folio; this is the approved V1 split-tender behavior.
+- A tender must be settled/verified independently before its allocation can post. The aggregate of posted allocations across all tenders must not exceed the amount due/eligible credit limit under the final folio policy, with concurrent attempts serialized by the folio lock.
 
 ### 4.6 `refunds` — money-out operation
 
@@ -231,6 +236,8 @@ Critical operations require short, atomic database transactions. Never keep a da
 6. Commit.
 
 ### Collect and allocate payment
+
+For split tender, create one payment record per tender/payment method. Verify and allocate each tender independently to the same reservation folio. Each successful allocation posts its own matching folio credit atomically. A pending or failed tender contributes zero to the paid total. Serialize allocation against the folio so concurrent tenders cannot collectively exceed the amount due or approved credit limit. Do not create a synthetic combined payment record.
 1. Create payment intent/record with idempotency key and authorized method.
 2. Verify collection/settlement using method-specific evidence.
 3. In a short transaction, lock payment then folio in a consistent order.
@@ -313,11 +320,15 @@ At minimum:
 18. Invoice snapshot remains unchanged after later folio activity.
 19. Closed folio/period behavior follows approved policy.
 20. RLS and server authorization tests cover all permitted and denied roles.
+21. One folio can be settled by multiple independently verified payment rows using different methods; each tender has its own payment and allocation records.
+22. A single payment/tender cannot allocate across multiple folios in V1.
+23. Concurrent tenders allocating to the same folio cannot over-credit/pay beyond the allowed amount.
+24. A pending or failed tender creates no posted allocation or folio credit; successful tenders remain independently auditable if another tender in the same attempted split settlement fails.
 
 ## 11. Decisions required before this design can be approved
 
 1. **Resolved — folio ownership/cardinality:** one primary folio per reservation; its stay reuses the same folio. No separate guest/room/master/company/house folios in V1.
-2. **Open — payment allocation:** must V1 support split tender (multiple payment methods for one folio)? A single payment will not be split across multiple folios in V1.
+2. **Resolved — split tender:** V1 supports multiple payment methods against one folio. Each tender is a separate `payments` record with one method, its own amount and settlement evidence, and its own allocation to the same reservation folio. One payment/tender cannot be split across multiple folios in V1. Each tender posts independently; pending/failed tenders do not count as paid.
 3. **Advance deposits:** Can hotels collect deposits before check-in and leave them unapplied until a folio/stay exists?
 4. **Cashier workflow:** Are cashier opening/closing sessions, cash drawer counts, shift handover, over/short, and supervisor reconciliation required in V1?
 5. **Payment methods:** Which methods are launch-critical: cash, bank transfer, card terminal, wallet/QR provider, or online payment gateway? Provider names are not selected.
@@ -331,7 +342,7 @@ Do not infer answers from the current permission matrix. It does not yet define 
 ## 12. Implementation gate
 
 Before executable schema:
-1. Confirm the remaining split-tender and advance-deposit scope; the one-primary-folio-per-reservation decision is already recorded.
+1. Confirm advance-deposit scope; one primary folio per reservation and split tender are already recorded product decisions.
 2. Confirm cashier, restaurant posting, and closed-period workflows.
 3. Obtain qualified local review of Nepal tax/invoice rules.
 4. Produce an ERD with exact cardinalities, unique keys, composite FKs, and lock order.
