@@ -205,7 +205,7 @@ Tenant isolation, least privilege, and financial authorization tests are release
 2. ~~Whether organization roles automatically apply to all properties.~~ Resolved for V1: organization-scope roles apply only for explicitly mapped permissions within their organization; property roles require explicit property membership.
 3. ~~Whether property-specific membership is mandatory or optional.~~ Resolved for V1: operational property roles require explicit property membership.
 4. Which guest fields are classified as sensitive.
-5. Refund thresholds and approval requirements.
+5. ~~Refund thresholds and approval requirements.~~ Resolved for Nepal V1: property defaults are NPR 25,000 per refund and NPR 5,000 per folio adjustment, with cumulative checks and mandatory exceptions; see section 17.
 6. Who may adjust folios, void invoices, close cashier sessions, and reconcile payments.
 7. Whether one person may hold conflicting roles.
 8. Which reports may be exported and by whom.
@@ -271,7 +271,7 @@ The server must enforce an explicit allowlist of property roles that an Administ
 | Housekeeping | `housekeeping.task.read`, `housekeeping.task.assign`, `housekeeping.task.update` |
 | Restaurant | `restaurant.order.read`, `restaurant.order.create`, `restaurant.order.update`, `restaurant.menu.manage` |
 | Folio | `folio.read`, `folio.post_charge`, `folio.adjust`, `folio.adjust.approve` |
-| Payments | `payment.collect`, `payment.refund`, `payment.refund.approve`, `payment.reconcile` |
+| Payments / Finance policy | `payment.collect`, `payment.refund`, `payment.refund.approve`, `payment.reconcile`, `finance.approval_policy.manage` |
 | Cashier sessions | `cashier.session.open`, `cashier.session.close` |
 | Reports | `report.operational.read`, `report.financial.read`, `report.export` |
 | Automation | `automation.read`, `automation.create`, `automation.test`, `automation.publish`, `automation.disable` |
@@ -309,3 +309,67 @@ The server must enforce an explicit allowlist of property roles that an Administ
 - Every API route, server action, background job and automation action must map to a permission and enforce scope.
 - Test every allow and deny, including cross-tenant, cross-property, admin-to-owner escalation, last-owner removal, sensitive-data access and approval separation.
 - No SQL migration has been applied as part of this documentation update.
+
+
+## 17. Confirmed V1 financial approval policy — Nepal launch
+
+**Status:** Confirmed product policy for the Nepal V1 production design. Not yet implemented.
+
+### Threshold defaults and configuration
+
+| Operation | Nepal V1 default | Threshold approval |
+|---|---:|---|
+| Payment refund | NPR 25,000 | Required above the threshold |
+| Folio adjustment | NPR 5,000 | Required above the threshold |
+
+- Thresholds are configurable per property, not globally shared across an organization.
+- An active Organization Owner is the only role permitted to change a property's thresholds.
+- Organization Administrators and property-scoped roles cannot change threshold settings.
+- Threshold changes are audited and apply prospectively; they do not change the rules attached to already-pending requests.
+- The property's configured operating currency is authoritative. NPR is the Nepal V1 default. Non-NPR transaction evaluation requires an immutable booked FX snapshot and defined rounding behavior before non-NPR payments are enabled.
+- An amount exactly equal to the threshold does not trigger threshold-based approval; mandatory exceptions still require approval.
+
+### Initiation and execution authority
+
+- Finance Managers may initiate refunds and folio adjustments within their assigned property.
+- Organization Owners may initiate these operations within their organization.
+- Organization Administrators, Cashiers, Front Desk roles, and other operational roles do not receive initiation authority by default.
+- `payment.refund` and `folio.adjust` are initiation permissions. They do not authorize bypassing server-side threshold, exception, ledger, provider, or approval checks.
+- Below-threshold requests without a mandatory exception may be executed by an authorized initiator through the controlled backend financial service.
+- Above-threshold requests and exception requests remain pending until a valid Owner approval is recorded.
+
+### Owner-only approval and separation of duties
+
+- Only an active Organization Owner may approve.
+- A Finance Manager's request may be approved by any other active Owner in the same organization.
+- An Owner's own request requires approval by a different active Owner.
+- Self-approval is always denied.
+- If only one active Owner exists, an Owner-originated request requiring approval is blocked; there is no Administrator or Finance Manager fallback.
+- Approval is bound to the exact transaction/request version, property, amount, currency, original payment or folio entry, destination where applicable, and initiator. Material changes require a new approval.
+- Approval must be checked server-side immediately before execution. Execution must be idempotent and safely coordinated with ledger/provider state.
+
+### Mandatory approval regardless of amount
+
+1. Cash refunds.
+2. Refunds to a payment method or destination different from the original.
+3. Provider-flagged or trusted risk-flagged transactions.
+4. Folio adjustments affecting a closed accounting period.
+5. Reversals or corrections of previously posted financial transactions.
+
+### Cumulative anti-splitting controls
+
+- Aggregate refunds against the original payment reference, including completed and pending related refunds. Never permit cumulative refunds above the refundable amount.
+- Check both individual and cumulative absolute folio adjustments against the same folio within the property's business day.
+- Link and aggregate corrections to the same original folio entry across business days.
+- Pending requests must reserve or lock the relevant refundable/adjustable amount to prevent concurrent bypass.
+- All initiations, decisions, executions, failures, cancellations, and threshold changes are auditable.
+
+### Permission catalog additions
+
+Add `finance.approval_policy.manage` to the permission catalog and grant it only to `organization_owner`. The existing `payment.refund.approve` and `folio.adjust.approve` permissions are also Owner-only. The Finance Manager receives initiation permissions but no approval permissions. Role grants never override the independent-approver rule.
+
+### Required test gates
+
+Test threshold boundaries, cumulative split transactions, exception cases, owner-vs-finance-manager initiators, self-approval denial, sole-owner blocking, unauthorized roles, pending-request immutability after threshold changes, concurrent requests, idempotency, and cross-tenant/property denial.
+
+**Implementation gate:** Design and review the property threshold settings, approval request/decision records, audit events, and backend execution boundary before creating migrations. This policy update does not apply a database migration or activate live refunds.
