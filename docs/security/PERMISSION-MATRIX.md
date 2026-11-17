@@ -219,3 +219,20 @@ Tenant isolation, least privilege, and financial authorization tests are release
 Do not implement authorization from this draft as-is. First map every planned API operation and UI action to an individual permission, confirm role scope with hotel operational stakeholders, define sensitive-data classifications, and approve financial separation-of-duties rules. Then implement and test the same policy across server routes, domain services, background workers, and database RLS.
 
 **Status:** Initial proposal — not an approved or implemented permission system.
+
+
+## 12. Confirmed V1 role and membership decisions
+
+The product owner has selected the following V1 direction:
+
+- **Membership model: Hybrid.** Organization Owner and Organization Administrator are organization-scoped. Operational staff require explicit property-scoped membership and cannot access sibling properties through that membership.
+- **Role model: Fixed.** V1 role definitions, permission definitions, and role-to-permission mappings are platform-defined and migration-managed. Tenants cannot create or modify custom roles or permission mappings in V1.
+- A user may belong to multiple organizations.
+- Organization-level access is limited to the permissions explicitly assigned to the organization-scoped role and data belonging to that organization.
+- Property-scoped grants remain restricted to the assigned property.
+- Platform support/operator access is separate from tenant roles and has no default tenant business-data access.
+- Custom tenant roles are deferred beyond V1.
+
+The concrete proposed tables, composite foreign keys, role-assignment structure, lifecycle rules, and RLS requirements are documented in [FOUNDATION-SCHEMA.md](../database/FOUNDATION-SCHEMA.md).
+
+**Status note:** The membership and role-model decisions above are confirmed for V1. The exact role-to-permission mapping, sensitive-action approvals, and remaining items in section 10 still require review. This document is not evidence that authorization has been implemented or tested.
