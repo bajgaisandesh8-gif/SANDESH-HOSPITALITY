@@ -400,7 +400,7 @@ If the initiator is an Owner, the independent second-Owner rule in section 12.3 
 ### 12.5 Cumulative checks and anti-splitting controls
 
 - Refund totals must be evaluated against the original payment reference, including prior completed and pending related refunds. Splitting one refund into smaller requests must not avoid the threshold. The system must also reject cumulative refunds exceeding the refundable amount.
-- Folio adjustments must be evaluated by individual adjustment and by cumulative absolute adjustment value against the same folio within the property's business day. Adjustments correcting the same original folio entry must also be linked and aggregated across requests, even if they cross business days.
+- Folio adjustments must be evaluated by individual adjustment and by cumulative absolute adjustment value against the same folio within a rolling 24-hour window. Include successful adjustments executed within the window and active pending/approved-but-not-executed reservations (including reservations older than 24 hours until they reach a terminal state). Exclude rejected, cancelled, and expired requests. An ambiguous execution/provider outcome remains reserved until reconciled. Adjustments correcting the same original folio entry must also be linked and aggregated across the full lifecycle of that original entry, even outside the rolling 24-hour window.
 - Threshold evaluation must occur server-side immediately before execution, using locked transaction/folio state. Client-calculated totals are never authoritative.
 - Pending approvals reserve or otherwise lock the relevant refundable/adjustable amount so concurrent requests cannot bypass the threshold or over-adjust the same balance.
 - All requests, approvals, rejections, expirations, cancellations, threshold changes, and execution outcomes must be audited.
@@ -413,7 +413,7 @@ Required tests include:
 - Amount exactly at threshold versus one minor currency unit above it.
 - Single request above threshold.
 - Multiple small refunds against one original payment crossing the threshold.
-- Multiple folio adjustments crossing the per-folio business-day threshold.
+- Multiple folio adjustments crossing the per-folio rolling 24-hour threshold, including boundary cases just inside/outside the window, pending reservations older than 24 hours, and concurrent requests.
 - Related corrections to one original folio entry across business days.
 - Mandatory exception below threshold.
 - Finance Manager request approved by an Owner.
