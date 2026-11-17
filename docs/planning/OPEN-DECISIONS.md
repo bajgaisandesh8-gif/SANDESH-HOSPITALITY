@@ -1,104 +1,126 @@
 # Open Decisions and Assumptions Register
 
-**Status:** Working register — unresolved items must not be silently treated as approved  
-**Purpose:** Keep product, operational, legal, and technical unknowns visible before implementation.
+**Status:** Consolidated V1 register  
+**Primary reference:** [V1 Product and Architecture Baseline](V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md)  
+**Rule:** Resolved defaults are implementation guidance. External validation gates are not closed by documentation alone.
 
 ## Decision states
 
-- **Open:** requires an explicit decision.
-- **Proposed:** a recommendation exists but is not approved.
-- **Deferred:** intentionally outside V1.
-- **Resolved:** decision approved and reflected in relevant documentation.
+- **Resolved:** product/architecture direction is established and reflected in the baseline.
+- **Default:** a conservative V1 default is selected for implementation planning; it must be surfaced if the first pilot requires a change.
+- **Deferred:** intentionally excluded from the first usable release.
+- **External gate:** requires evidence or confirmation from a hotel operator, qualified professional, provider, or infrastructure plan before the affected production feature.
 
-## 1. Confirmed V1 direction
+## 1. Resolved V1 direction
 
-| Topic | Current direction | State |
+| Topic | V1 decision |
+|---|---|
+| Product | Multi-tenant hotel-management SaaS |
+| Initial market | Nepal-first |
+| Initial customer profile | Independent and small-to-mid-sized hotels; multi-property organizations supported |
+| Client/hosting | Web-first, cloud-first; internet required for normal operations |
+| Offline / desktop | Deferred; manual printable outage procedures only |
+| Initial priority | Identity/tenancy, property/rooms, reservations, front desk |
+| Currency | NPR-only for initial financial operations; reject non-NPR |
+| Membership | Hybrid organization/property membership |
+| Roles | Fixed platform-managed role and permission catalog; no tenant-custom roles in V1 |
+| Guest scope | Organization-scoped profiles; no cross-organization merge |
+| Inventory | Hybrid: per-night room-type inventory plus physical-room overlap protection |
+| Reservation | One primary room booking and at most one active stay per reservation in V1; group/multi-room bookings deferred |
+| Dates | Property-local calendar dates; half-open [check-in, check-out) interval |
+| Booking channel | Staff-created/manual bookings; public booking and OTA sync deferred |
+| Folio | One primary folio per reservation; stay reuses it |
+| Split tender | Multiple separately recorded tenders may allocate to one folio; one tender cannot span multiple folios |
+| Advance payments | Reservation-linked deposits may be posted to that reservation's folio before check-in |
+| Automation | Platform-owned constrained engine; templates first, visual builder only after safe runner |
+| Integrations | No live external payment/messaging/OTA/biometric/door-lock integration until provider and legal gates close |
+| Source of truth | GitHub; focused branches/PRs; no merge/deploy without explicit approval |
+| Architecture | Modular monolith first; avoid premature microservices |
+
+## 2. Financial policy decisions already recorded
+
+| Topic | Decision |
+|---|---|
+| Refund approval threshold | NPR 25,000 per property |
+| Folio adjustment approval threshold | NPR 5,000 per property |
+| Threshold changes | Active Organization Owner only |
+| Approver | Active Organization Owner only |
+| Self-approval | Prohibited; another active Owner must approve |
+| Mandatory approval exceptions | Cash refund, changed refund destination/method, trusted risk flag, closed-period adjustment, reversal/correction of posted financial transaction |
+| Anti-splitting | Aggregate refunds against original payment; aggregate folio adjustments over rolling 24 hours and linked correction lifecycle; reserve pending amounts |
+| Currency | NPR-only initially; exact numeric amounts; no silent FX |
+
+The full policy and execution model remain in FINANCIAL-APPROVAL-SCHEMA.md and PAYMENT-FOLIO-LEDGER-DESIGN.md. These are design proposals, not implemented controls.
+
+## 3. Conservative V1 defaults
+
+| Topic | Default |
+|---|---|
+| UI language | English-first; locale-ready schema; Nepali localization can follow |
+| Authentication | Invite-only, verified email/password baseline; MFA required for production finance administration if supported by selected configuration |
+| Guest data | Minimal contact/stay data; no identity-document storage until legal/access/retention review |
+| Duplicate guests | Suggest possible duplicates; no destructive automatic merge |
+| Reservation holds | No temporary hold in staff-only first flow; introduce durable expiring holds only with a public/online booking use case |
+| Cancellation/no-show | Explicit property policy; no universal hard-coded penalty |
+| Cash/bank payments | Manual verification and actor/evidence record only; no client-side success trust |
+| Payment gateway | None selected; live gateway deferred |
+| Night audit | Property-local business date required; exact cutoff/close workflow must be confirmed with pilot hotel before finance reporting |
+| Restaurant | POS/KOT/QR and room-charge posting deferred |
+| Automation actions | No payment/refund/folio mutation, inventory override, arbitrary SQL/HTTP, or code execution |
+| Tenant onboarding | Controlled/manual initial pilot; no public self-service signup |
+| Tenant billing | Deferred |
+| Support access | No default tenant data access; future break-glass must be time-limited, approved, scoped, audited |
+| Deployment | Separate local/CI/staging/production environments; current Supabase project is not assumed production |
+| Backups | Restore drill required; RPO/RTO and retention set after plan/cost review |
+
+## 4. Deferred product areas
+
+- Full offline application and synchronization; Tauri desktop; native mobile apps.
+- Public direct-booking engine, OTA/channel manager, external partner API, outgoing tenant webhooks.
+- Restaurant POS, kitchen tickets, QR room ordering, concierge.
+- HIMS (undefined; do not implement until its meaning is supplied).
+- Biometric attendance and door-lock/key-card integrations.
+- Multi-currency, guest/company/house master folios, multiple folios per reservation.
+- Tenant-custom roles, arbitrary workflow code, unrestricted n8n, workflow marketplace.
+- Subscription billing, self-service signup, usage billing.
+
+## 5. External validation gates — still open
+
+These gates are intentionally not guessed or marked resolved.
+
+| Gate | Evidence required | Blocks |
 |---|---|---|
-| Product shape | Multi-tenant hotel-management SaaS | Confirmed direction |
-| Client | Web-first | Confirmed direction |
-| Hosting model | Cloud-first; internet required for normal operation | Confirmed direction |
-| Offline operation | No offline application/sync in V1; manual outage procedure only | Deferred to V2 |
-| Desktop shell | Tauri deferred; no V1 desktop application | Deferred |
-| Core priorities | Reservations, PMS foundation, front desk | Proposed priority |
-| Automation | Templates plus constrained visual workflow builder | Confirmed product requirement; implementation design pending |
-| Tenant workflows | Platform-owned workflow engine/runner | Proposed architecture |
-| n8n | Limited to platform-owned integrations, subject to license review | Proposed boundary |
-| Source of truth | GitHub repository | Confirmed workflow |
-| Implementation | One feature at a time, with review and tests | Confirmed workflow |
+| Nepal tax/accounting | Qualified Nepal accountant confirms PAN/VAT fields, tax/service charge, invoice numbering, rounding, credit notes, fiscal retention and correction flow | Legal invoices, tax posting, production finance |
+| Hotel operating policy | Pilot hotel confirms check-in/out times, business-day/night audit, cancellation/no-show/deposit policy, cashier sessions, shift handover, cash reconciliation and closed-period corrections | Production reservation policy and finance close |
+| Payment provider | Provider selected; merchant onboarding, methods/currencies, signed callbacks, idempotency, settlement reports, refunds/disputes and sandbox behavior verified | Live online payments |
+| Guest privacy | Qualified local review of collection purpose, identity documents, retention, access, export/deletion and incident response | Identity-document collection and privacy sign-off |
+| Data residency/vendors | Supabase/Vercel region, subprocessors, contracts, backups and cross-border transfer acceptability confirmed | Real customer/guest data in production |
+| Messaging | Email/SMS/WhatsApp provider, sender identity, consent, delivery state and cost confirmed | External guest messaging |
+| Backup/recovery | RPO/RTO, retention, restore owner and successful restore drill on chosen service plan | Production launch |
+| Integrations | Vendor API, commercial terms, lawful basis, security and operational acceptance | Biometric, door-lock, OTA and similar integrations |
+| SaaS billing | Pricing, tax, plans, limits, collection and support terms | Self-service SaaS billing |
 
-## 2. Product and market decisions
+## 6. Coding-entry blockers
 
-| Question | Why it matters | State |
-|---|---|---|
-| Initial launch country and target customer segment? | Determines localization, tax, invoices, privacy, support, and onboarding | Open |
-| Single-property hotels, chains, or both at launch? | Affects organization/property setup and pricing | Open |
-| Supported languages and default locale? | UI, guest messages, templates, and support | Open |
-| Supported currencies and exchange-rate policy? | Pricing, folios, reporting, and payment reconciliation | Open |
-| Tax, service charge, fiscal invoice, and invoice-number rules? | Legal and accounting compliance | Open |
-| Tenant subscription/billing model and plan limits? | SaaS entitlements, metering, and billing | Open |
-| Data import/migration requirements? | Determines onboarding tools and validation | Open |
-| Data retention, export, deletion, and privacy policy? | Guest data lifecycle and compliance | Open |
+The first non-production coding slice is limited to invite-only authentication, organization/property context, fixed roles/permissions, audit foundation, and tenant-isolation tests.
 
-## 3. Hotel operations decisions
+Before that slice:
+- Repository merge-conflict markers must be absent.
+- Local and GitHub main must be clean and synchronized.
+- Phase 0 lint/typecheck/test/build and CI baseline must be verified.
+- The identity/membership schema, permissions, RLS policies, and negative tests must be reviewed together.
+- A disposable local/test database must be used; no production Supabase migration.
+- The user must explicitly confirm coding start.
 
-| Question | Why it matters | State |
-|---|---|---|
-| Guest identity/registration requirements by jurisdiction? | Check-in form and retention policy | Open |
-| Reservation channels in V1: manual, website, OTA, channel manager? | Inventory synchronization and integration scope | Open |
-| Cancellation, deposit, no-show, refund, and overbooking policies? | Reservation and financial state machines | Open |
-| Room assignment timing and room-type inventory rules? | PMS/inventory model | Open |
-| Night audit and business-date closing requirements? | Daily revenue, date rollover, and reports | Open |
-| Cashier session model and reconciliation roles? | Cash controls and separation of duties | Open |
-| Payment gateway(s), settlement, and manual fallback? | Payment flow and compliance scope | Open |
-| Restaurant POS, kitchen, QR ordering scope in initial release? | Whether these are V1 or later modules | Open |
-| Housekeeping statuses, inspections, and room-release rules? | Room readiness and front desk integration | Open |
-| Biometric attendance vendor and lawful basis? | Hardware/API integration and sensitive data handling | Open |
-| Door-lock/key-card vendors? | Hardware integration and check-in workflow | Open |
-| Meaning and scope of “HIMS”? | Avoid building an undefined module | Open |
+Reservation/inventory implementation additionally requires the ERD/cardinality and concurrency contract. Finance/invoice/payment implementation additionally requires the external gates above.
 
-## 4. Architecture and operations decisions
+## 7. Change control
 
-| Question | Why it matters | State |
-|---|---|---|
-| Supabase region and data residency requirements? | Latency, legal compliance, and project configuration | Open |
-| RPO/RTO and backup retention? | Recovery design and operational cost | Open |
-| Monitoring, alerting, and support ownership? | Incident response and reliability | Open |
-| Email/SMS/WhatsApp providers and consent rules? | Guest communications and deliverability | Open |
-| File/document storage and retention? | Guest documents and operational attachments | Open |
-| Exact permission roles and property-scoping rules? | RLS, API authorization, and staff UX | Proposed |
-| Workflow builder trigger/action catalog and limits? | Prevent unsafe tenant-defined automation | Proposed |
-| Tenant quotas and automation cost limits? | Shared infrastructure protection | Proposed |
-| n8n licensing and commercial embedding review? | Avoid product licensing risk | Open |
-| UUIDv7/library support, audit retention, soft-delete rules? | Schema and future compatibility | Proposed |
+If a pilot customer or external professional requires a different rule:
+1. Record the exact change and its business/security/legal impact.
+2. Update this register and the V1 baseline.
+3. Reconcile affected product, workflow, API, database, permission, and test documents.
+4. Add or update acceptance tests.
+5. Only then implement the change.
 
-## 5. Explicit V1 exclusions / deferrals
-
-Unless formally changed through a documented decision, V1 does not include:
-- Full offline application operation or background offline synchronization.
-- Tauri desktop client.
-- Tenant-created arbitrary JavaScript execution, unrestricted HTTP calls, or direct database queries in workflows.
-- Unrestricted shared n8n access for hotel tenants.
-- Unspecified integrations or modules whose operational requirements are not defined.
-
-## 6. Decision process
-
-For each decision:
-1. State the exact question and options.
-2. Record operational, security, legal, cost, and delivery implications.
-3. Name the decision owner.
-4. Mark as Resolved, Deferred, or Open.
-5. Update the affected requirements, architecture, database, API, and test documents.
-6. Do not implement behavior based only on an unapproved suggestion.
-
-## 7. Coding-entry blockers
-
-The following must be resolved before their related implementation:
-- Launch jurisdiction and basic localization/currency/tax approach before financial and invoice implementation.
-- Reservation/channel scope and cancellation/deposit rules before reservation inventory/payment implementation.
-- Night audit/business-date requirements before financial reporting.
-- Guest identity and retention requirements before collecting identity documents.
-- Payment provider and settlement behavior before live payment integration.
-- Final permission model before broad staff access or tenant-facing APIs.
-- RPO/RTO and backup configuration before production launch.
-
-A coding prototype may begin with synthetic data and explicitly marked assumptions, but it must not turn unresolved assumptions into production behavior.
+Do not silently convert a default into a permanent policy or an external gate into an assumed fact.
