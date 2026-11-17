@@ -54,16 +54,16 @@ This file records why a direction is being considered and what must be validated
 
 ## ADR-004 — V1 implementation sequence starts with identity and tenant isolation
 
-**State:** Proposed sequence  
+**State:** Accepted V1 sequence  
 **Context:** Reservations, folios, housekeeping, and automation all depend on correct organization/property scope and staff permissions.
 
 **Decision:**
-- Establish authentication, organization/property membership, authorization, and tenant-isolation tests before implementing hotel business modules.
+- Establish invite-only authentication, the hybrid organization/property membership model, fixed V1 roles/permissions, audit foundation, and tenant-isolation tests before implementing hotel business modules.
 
 **Consequences:**
 - No reservation or guest feature should be built on an unverified authorization foundation.
 - Permission and RLS behavior must be tested at database and API boundaries.
-- Final role definitions remain subject to product/operations review.
+- The fixed V1 role catalog and hybrid membership scope are recorded in FOUNDATION-SCHEMA.md and PERMISSION-MATRIX.md; any change requires a documented decision and updated tests.
 
 ## ADR-005 — GitHub is the reviewed source of truth
 
