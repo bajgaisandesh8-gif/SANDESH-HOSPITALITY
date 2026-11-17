@@ -29,12 +29,14 @@ These are architectural proposals and must be validated as implementation decisi
 ## Repository structure
 
 ```text
+AGENTS.md       Repository-wide AI agent instructions
+CONTRIBUTING.md Contribution and review workflow
 docs/
   api/          API design
-  architecture/ System architecture
+  architecture/ System architecture and decision records
   automation/   Automation engine design
   database/     Database design and ERD
-  planning/     Open decisions and assumptions
+  planning/     Open decisions, roadmap, and assumptions
   product/      Product requirements
   quality/      Testing and release strategy
   security/     Security architecture and permission matrix
