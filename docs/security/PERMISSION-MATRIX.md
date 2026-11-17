@@ -6,6 +6,8 @@
 
 > This matrix is a starting point for authorization design. It does not define final roles, legal responsibilities, or implemented permissions. The product owner must approve role names, scope, and sensitive-action rules before implementation.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). This document defines the detailed design for its domain; the baseline controls release scope and the remaining external validation gates. Design text is not implemented behavior.
+
 ## 1. Purpose
 
 Define a consistent permission model for users operating within organizations and hotel properties. The model must support multi-tenant isolation, least privilege, explicit authorization for sensitive actions, and auditable changes.
