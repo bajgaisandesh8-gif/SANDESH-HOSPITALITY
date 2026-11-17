@@ -1,12 +1,14 @@
 # SANDESH HOSPITALITY
 ## System Architecture
 
-**Document status:** Initial architecture baseline — for review  
+**Document status:** Architecture baseline — consolidated V1 direction is governed by docs/planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md  
 **Version:** 0.1.0  
 **Related document:** `docs/product/PRODUCT-REQUIREMENTS.md`  
 **Platform:** V1 web-first, cloud-first SaaS
 
 > This document describes the proposed system boundaries and architectural constraints. It is not proof that any component has been implemented or deployed. Decisions marked as proposed or open must be reviewed before implementation.
+
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Where this older design text still lists a topic as open or proposed but the consolidated baseline provides a V1 default, use the baseline for planning; external validation gates remain mandatory. This document remains a design artifact, not proof of implementation or production approval.
 
 ---
 
