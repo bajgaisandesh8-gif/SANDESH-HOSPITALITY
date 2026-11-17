@@ -1,6 +1,6 @@
 # SANDESH HOSPITALITY — Conceptual ERD
 
-**Status:** Initial conceptual diagram — for technical review  
+**Status:** Conceptual ERD — subordinate to the consolidated V1 baseline; not an executable schema  
 **Version:** 0.1.0  
 **Related document:** [DATABASE-DESIGN.md](./DATABASE-DESIGN.md)
 
