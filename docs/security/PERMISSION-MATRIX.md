@@ -359,8 +359,8 @@ The server must enforce an explicit allowlist of property roles that an Administ
 ### Cumulative anti-splitting controls
 
 - Aggregate refunds against the original payment reference, including completed and pending related refunds. Never permit cumulative refunds above the refundable amount.
-- Check both individual and cumulative absolute folio adjustments against the same folio within the property's business day.
-- Link and aggregate corrections to the same original folio entry across business days.
+- Check individual and cumulative absolute folio adjustments against the same folio within a rolling 24-hour window; active pending/approved reservations remain reserved until conclusively resolved.
+- Link and aggregate corrections to the same original folio entry across the full lifecycle, regardless of the rolling window.
 - Pending requests must reserve or lock the relevant refundable/adjustable amount to prevent concurrent bypass.
 - All initiations, decisions, executions, failures, cancellations, and threshold changes are auditable.
 
