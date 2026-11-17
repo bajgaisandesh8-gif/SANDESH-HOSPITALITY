@@ -7,6 +7,8 @@
 
 > This document translates the approved V1 access decisions into a concrete foundation schema proposal. It is not an applied migration and does not claim that RLS or authorization has been implemented. Review the role catalog and permission assignments before executable SQL is created.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). This document defines the detailed design for its domain; the baseline controls release scope and the remaining external validation gates. Design text is not implemented behavior.
+
 ## 1. Confirmed V1 decisions
 
 1. A user may belong to multiple organizations.
