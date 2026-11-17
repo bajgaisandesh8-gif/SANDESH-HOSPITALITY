@@ -37,7 +37,7 @@ Invariants:
 
 A folio is a property-scoped account statement for a guest, reservation, stay, company/house account, or another approved billing party. It records what is owed and credits applied to that account. It is not itself a payment instrument or a bank/cash account.
 
-The exact V1 folio ownership/cardinality is unresolved. Candidate links include reservation, stay, guest, and billing party. A folio must belong to one property and one organization; cross-property folio sharing is not assumed.
+**V1 product decision — resolved:** use one primary folio per reservation. The corresponding stay uses that same folio; check-in must not create a second stay folio. A guest with multiple reservations has a separate primary folio for each reservation. The guest profile itself does not own a shared folio. Separate room folios, guest-level master folios, company accounts, and house accounts are out of V1. A folio belongs to exactly one property and organization; cross-property sharing is not supported.
 
 ### 2.2 Payment
 
@@ -86,7 +86,7 @@ Candidate fields:
 - `id`, `organization_id`, `property_id`.
 - `folio_number`: human-readable number unique within the agreed property/business scope.
 - `folio_type`: candidate values `guest`, `reservation`, `stay`, `company`, `house_account`; final V1 enum requires workflow decision.
-- Nullable links to `guest_id`, `reservation_id`, `stay_id`, and approved billing-party entity, with explicit ownership/cardinality constraints.
+- `reservation_id`: required and unique within the property, establishing one primary folio per reservation. `stay_id` is a nullable operational link to the active stay created from that reservation; it must not create a second folio. `guest_id` may be retained as a non-authoritative display/reporting reference only if the guest data model requires it; it does not establish folio ownership. No company/house-account link in V1.
 - `currency`: NPR for Nepal V1 if NPR-only launch is approved.
 - `status`: candidate `open`, `closed`, `void`; closed does not mean immutable history is deleted.
 - `opened_at`, `closed_at`, `opened_by`, `closed_by`, `version`, `created_at`, `updated_at`.
@@ -95,7 +95,7 @@ Rules:
 - Folio scope and currency are fixed at creation; changing either after posting is prohibited.
 - A closed folio cannot accept ordinary new charges or allocations. Reopening, late postings, and closed-period corrections require explicit policy and permission design.
 - Current balance is derived from posted ledger entries, not maintained as an independently editable number. A cached balance may be introduced only as a transactionally maintained projection with a reconciliation path.
-- Folio ownership and whether a reservation can have multiple guest/room folios are unresolved.
+- Enforce one folio per reservation with a unique constraint on the scoped reservation reference. A stay inherits the reservation's folio. Do not create additional guest, room, master, company, or house-account folios in V1. A guest may have multiple independent reservation folios.
 
 ### 4.2 `folio_entries` — immutable posted ledger
 
@@ -173,7 +173,7 @@ Rules:
 - Allocation posting and corresponding folio credit entry occur atomically.
 - Allocation reversal creates a compensating debit entry on the folio and a linked reversal record; it does not erase the original allocation.
 - A retry with the same idempotency key returns the existing allocation result.
-- Whether one payment may be allocated across multiple folios, and whether one folio can be paid by multiple tenders, must be confirmed as V1 behavior.
+- Under the V1 one-primary-folio model, an allocation targets one reservation folio. A single payment is not split across multiple folios in V1. Whether a single folio can be settled using multiple tenders (split tender) remains an explicit open decision; do not infer it from the one-folio choice.
 
 ### 4.6 `refunds` — money-out operation
 
@@ -316,8 +316,8 @@ At minimum:
 
 ## 11. Decisions required before this design can be approved
 
-1. **Folio ownership/cardinality:** Is V1 one primary folio per reservation/stay, or do hotels need separate guest/room/master folios and company/house accounts at launch?
-2. **Payment allocation:** Must V1 support split tender (multiple payment methods for one folio) and one payment split across multiple folios?
+1. **Resolved — folio ownership/cardinality:** one primary folio per reservation; its stay reuses the same folio. No separate guest/room/master/company/house folios in V1.
+2. **Open — payment allocation:** must V1 support split tender (multiple payment methods for one folio)? A single payment will not be split across multiple folios in V1.
 3. **Advance deposits:** Can hotels collect deposits before check-in and leave them unapplied until a folio/stay exists?
 4. **Cashier workflow:** Are cashier opening/closing sessions, cash drawer counts, shift handover, over/short, and supervisor reconciliation required in V1?
 5. **Payment methods:** Which methods are launch-critical: cash, bank transfer, card terminal, wallet/QR provider, or online payment gateway? Provider names are not selected.
@@ -331,7 +331,7 @@ Do not infer answers from the current permission matrix. It does not yet define 
 ## 12. Implementation gate
 
 Before executable schema:
-1. Approve folio ownership/cardinality and split-tender/deposit scope.
+1. Confirm the remaining split-tender and advance-deposit scope; the one-primary-folio-per-reservation decision is already recorded.
 2. Confirm cashier, restaurant posting, and closed-period workflows.
 3. Obtain qualified local review of Nepal tax/invoice rules.
 4. Produce an ERD with exact cardinalities, unique keys, composite FKs, and lock order.
