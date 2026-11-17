@@ -129,7 +129,7 @@ Financial requirements:
 
 The final ledger model and accounting semantics require finance-domain review.
 
-The V1 financial approval schema proposal is maintained in [FINANCIAL-APPROVAL-SCHEMA.md](FINANCIAL-APPROVAL-SCHEMA.md). It defines the proposed property policy, financial operation request, immutable approval decision, audit-log, rolling 24-hour folio adjustment aggregation, refund reservation, and execution/reconciliation boundaries. It depends on finalizing the parent payment/folio ledger model and is not an executable schema.
+The V1 financial approval schema proposal is maintained in [FINANCIAL-APPROVAL-SCHEMA.md](FINANCIAL-APPROVAL-SCHEMA.md). The parent payment, folio, allocation, refund, and invoice ledger proposal is maintained in [PAYMENT-FOLIO-LEDGER-DESIGN.md](PAYMENT-FOLIO-LEDGER-DESIGN.md). Both documents remain design proposals and must be reconciled before migrations. It defines the proposed property policy, financial operation request, immutable approval decision, audit-log, rolling 24-hour folio adjustment aggregation, refund reservation, and execution/reconciliation boundaries. It depends on finalizing the parent payment/folio ledger model and is not an executable schema.
 
 ### 3.5 Restaurant, KOT, and QR ordering
 
