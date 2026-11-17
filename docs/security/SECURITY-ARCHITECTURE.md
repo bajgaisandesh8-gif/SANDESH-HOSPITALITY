@@ -7,6 +7,8 @@
 
 > This document defines proposed security requirements and trust boundaries. It is not evidence that these controls have been implemented or tested. Product-specific configuration and Supabase behavior must be verified against current official documentation before implementation.
 
+**Controlling V1 reference:** [V1 Product and Architecture Baseline](../planning/V1-PRODUCT-AND-ARCHITECTURE-BASELINE.md). Use its release boundary and defaults where this earlier proposal is broader or still marks a decision open. External validation gates remain mandatory; this file is a design proposal, not proof of implementation.
+
 ---
 
 ## 1. Security objectives
