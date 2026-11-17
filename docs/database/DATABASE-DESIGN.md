@@ -1,7 +1,7 @@
 # SANDESH HOSPITALITY
 ## Database Design
 
-**Document status:** Initial conceptual baseline — for technical review  
+**Document status:** Conceptual baseline — V1 membership and role decisions are resolved in docs/database/FOUNDATION-SCHEMA.md  
 **Version:** 0.1.0  
 **Database direction:** Supabase PostgreSQL  
 **Related documents:** docs/product/PRODUCT-REQUIREMENTS.md and docs/architecture/SYSTEM-ARCHITECTURE.md
@@ -337,8 +337,8 @@ Use pgTAP or an equivalent PostgreSQL testing approach where appropriate, plus a
 
 ## 13. Open database decisions
 
-1. Final organization and property membership model.
-2. Global versus tenant-customizable roles.
+1. ~~Final organization and property membership model.~~ Resolved for V1: hybrid organization/property membership; see FOUNDATION-SCHEMA.md.
+2. ~~Global versus tenant-customizable roles.~~ Resolved for V1: platform-defined fixed roles; tenant-customizable roles are deferred.
 3. Guest profile scope and cross-property guest recognition.
 4. Room-type inventory versus physical-room-only inventory, or a hybrid.
 5. Reservation lifecycle and group booking requirements.
@@ -354,6 +354,10 @@ Use pgTAP or an equivalent PostgreSQL testing approach where appropriate, plus a
 15. Required reporting and analytics workloads.
 
 ## 14. Approval and next steps
+
+### Confirmed V1 membership and role decisions
+
+The V1 access model is hybrid: Organization Owner and Organization Administrator are organization-scoped; operational roles require explicit property-scoped membership. V1 roles and permissions are platform-defined fixed catalog entries seeded by migrations; tenants cannot create or edit role definitions or permission mappings. The detailed table proposal, constraints, scope rules, and RLS design are maintained in [FOUNDATION-SCHEMA.md](FOUNDATION-SCHEMA.md). These decisions resolve open database decision items 1 and 2 for the V1 foundation.
 
 Before executable schema work:
 1. Review this conceptual model against the PRD.
